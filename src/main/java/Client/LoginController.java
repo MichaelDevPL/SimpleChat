@@ -43,7 +43,6 @@ public class LoginController {
         stage.setScene(new Scene(root, 600, 400));
         stage.setTitle(ClientData.getName());
         stage.setOnCloseRequest(e-> {
-            RoomController.th.stop();
             System.exit(0);
         });
         stage.setResizable(false);

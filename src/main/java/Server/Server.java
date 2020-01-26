@@ -5,17 +5,22 @@ import Server.databaseUtil.DBUtil;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Executable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Server {
 
     private static List<Client> clients;
     private static DataOutputStream dos;
     private DataInputStream dis;
+    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newScheduledThreadPool(10);
 
     public Server() {
 
@@ -36,6 +41,11 @@ public class Server {
 
                 name = dis.readUTF() ;
                 Client user = new Client(name, dos, dis);
+
+                synchronized (user){
+                    executor.execute(user);
+                }
+
                 System.out.println("Connected : " + name);
                 clients.add(user);
 

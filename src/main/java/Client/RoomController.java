@@ -11,8 +11,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
-public class RoomController {
+public class RoomController implements Runnable {
 
     @FXML
     private TextField myMsg;
@@ -24,50 +26,20 @@ public class RoomController {
     private DataOutputStream dos;
     private DataInputStream dis;
 
-    public static Thread th;
+    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newScheduledThreadPool(1);
 
     public RoomController() {
         try {
-
             sock = new Socket(ClientData.getIp(), ClientData.getPort());
             dos = new DataOutputStream(sock.getOutputStream());
             dis = new DataInputStream(sock.getInputStream());
 
             dos.writeUTF(ClientData.getName());
-            /*
-            * This Thread let the client recieve the message from the server for any time;
-            */
-            th = new Thread(() -> {
-                try {
 
-                    JSONParser parser = new JSONParser();
-
-                    while(true) {
-                        String newMsgJson = dis.readUTF();
-
-                        System.out.println("RE : " + newMsgJson);
-                        Message newMsg = new Message();
-
-                        Object obj = parser.parse(newMsgJson);
-                        JSONObject msg = (JSONObject) obj;
-
-                        newMsg.setName((String) msg.get("name"));
-                        newMsg.setMessage((String) msg.get("message"));
-
-                        chatLog.appendText(newMsg.getName() + " : " + newMsg.getMessage() + "\n");
-                    }
-                } catch(Exception E) {
-                    E.printStackTrace();
-                }
-
-            });
-
-            th.start();
-
-        } catch(IOException E) {
+            executor.execute(this::run);
+        } catch (IOException E) {
             E.printStackTrace();
         }
-
     }
 
     public void onClickSend() {
@@ -89,17 +61,41 @@ public class RoomController {
             myMsg.setText("");
             myMsg.requestFocus();
 
-        } catch(IOException E) {
+        } catch (IOException E) {
             E.printStackTrace();
         }
 
     }
 
     public void buttonPressed(KeyEvent e) {
-        if(e.getCode().toString().equals("ENTER"))
-        {
+        if (e.getCode().toString().equals("ENTER")) {
             onClickSend();
         }
     }
+
+    @Override
+    public void run() {
+        try {
+            JSONParser parser = new JSONParser();
+
+            while (true) {
+                String newMsgJson = dis.readUTF();
+
+                System.out.println("RE : " + newMsgJson);
+                Message newMsg = new Message();
+
+                Object obj = parser.parse(newMsgJson);
+                JSONObject msg = (JSONObject) obj;
+
+                newMsg.setName((String) msg.get("name"));
+                newMsg.setMessage((String) msg.get("message"));
+
+                chatLog.appendText(newMsg.getName() + " : " + newMsg.getMessage() + "\n");
+            }
+        } catch (Exception E) {
+            E.printStackTrace();
+        }
+    }
 }
+
 

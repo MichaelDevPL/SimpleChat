@@ -11,7 +11,7 @@ public class DBUtil {
     private static final String DATABASE_DRIVER = "com.mysql.jdbc.Driver";
     private static final String DATABASE_URL = "jdbc:mysql://localhost:3306/chatbase?useSSL=false";
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "1234";
+    private static final String PASSWORD = "Zxcvbnm1@";
 
 
     // init connection object
